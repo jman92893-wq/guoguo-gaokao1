@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>果果的高考倒计时</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* 星空背景 */
+  .stars {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0;
+  }
+  .star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+  }
+
+  /* 流星 */
+  .shooting-star {
+    position: absolute;
+    width: 2px; height: 80px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.8));
+    animation: shoot var(--sdur) linear infinite;
+    animation-delay: var(--sdelay);
+    opacity: 0;
+  }
+  @keyframes shoot {
+    0% { opacity: 0; transform: translateX(0) translateY(0) rotate(-35deg); }
+    5% { opacity: 1; }
+    10% { opacity: 0; transform: translateX(-300px) translateY(300px) rotate(-35deg); }
+    100% { opacity: 0; transform: translateX(-300px) translateY(300px) rotate(-35deg); }
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    text-align: center; padding: 40px;
+  }
+
+  /* 专属称呼 */
+  .dear {
+    font-size: 1.1rem; color: rgba(255,255,255,0.5);
+    letter-spacing: 4px; margin-bottom: 20px;
+  }
+  .dear .name {
+    color: #f8c291;
+    font-weight: 700; font-size: 1.4rem;
+  }
+
+  /* 主标题 */
+  .title {
+    font-size: 2.2rem; font-weight: 700;
+    color: #fff;
+    letter-spacing: 8px;
+    margin-bottom: 8px;
+    text-shadow: 0 0 30px rgba(248, 194, 145, 0.6);
+  }
+  .subtitle {
+    font-size: 1rem; color: rgba(255,255,255,0.5);
+    letter-spacing: 4px; margin-bottom: 50px;
+  }
+
+  /* 倒计时卡片 */
+  .countdown-card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 24px;
+    padding: 40px 50px;
+    margin-bottom: 40px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .countdown-label {
+    font-size: 1rem; color: rgba(255,255,255,0.5);
+    letter-spacing: 4px; margin-bottom: 24px;
+  }
+  .countdown-label .name {
+    color: #f8c291; font-weight: 600;
+  }
+  .countdown {
+    display: flex; gap: 20px; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .time-block {
+    text-align: center; min-width: 90px;
+  }
+  .time-number {
+    font-size: 5rem; font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 0 40px rgba(248, 194, 145, 0.5);
+    font-variant-numeric: tabular-nums;
+    font-family: "SF Mono", "JetBrains Mono", "Consolas", monospace;
+  }
+  .time-label {
+    font-size: 0.85rem; color: rgba(255,255,255,0.45);
+    margin-top: 8px; letter-spacing: 2px;
+  }
+  .time-separator {
+    font-size: 4rem; color: rgba(255,255,255,0.3);
+    font-weight: 300; align-self: flex-start;
+    padding-top: 10px;
+  }
+
+  /* 鼓励语 */
+  .encouragement-card {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 30px 40px;
+    max-width: 520px; margin: 0 auto 40px;
+  }
+  .encouragement-icon {
+    font-size: 2rem; margin-bottom: 12px;
+  }
+  .encouragement-text {
+    font-size: 1.25rem; color: rgba(255,255,255,0.9);
+    line-height: 1.8; letter-spacing: 2px;
+  }
+  .encouragement-author {
+    font-size: 0.8rem; color: rgba(255,255,255,0.4);
+    margin-top: 12px; letter-spacing: 2px;
+  }
+
+  /* 底部 */
+  .footer {
+    font-size: 0.85rem; color: rgba(255,255,255,0.35);
+    letter-spacing: 2px;
+  }
+  .heart { color: #ff6b9d; animation: heartbeat 1.2s ease-in-out infinite; display: inline-block; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    30% { transform: scale(1.2); }
+  }
+
+  @media (max-width: 600px) {
+    .title { font-size: 1.5rem; letter-spacing: 4px; }
+    .dear { font-size: 0.95rem; }
+    .dear .name { font-size: 1.2rem; }
+    .time-number { font-size: 3rem; }
+    .time-separator { font-size: 2.5rem; padding-top: 0; }
+    .time-block { min-width: 60px; }
+    .countdown { gap: 10px; }
+    .countdown-card { padding: 28px 20px; }
+    .encouragement-text { font-size: 1.05rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 星空 -->
+<div class="stars" id="stars"></div>
+
+<div class="container">
+  <div class="dear">Dear <span class="name">果果</span></div>
+  <div class="title">高 考 倒 计 时</div>
+  <div class="subtitle">每一秒的努力，都在靠近梦想</div>
+
+  <div class="countdown-card">
+    <div class="countdown-label">距 离 <span class="name">果果</span> 的 高 考 还 有</div>
+    <div class="countdown" id="countdown">
+      <div class="time-block">
+        <div class="time-number" id="days">00</div>
+        <div class="time-label">天</div>
+      </div>
+      <div class="time-separator">:</div>
+      <div class="time-block">
+        <div class="time-number" id="hours">00</div>
+        <div class="time-label">时</div>
+      </div>
+      <div class="time-separator">:</div>
+      <div class="time-block">
+        <div class="time-number" id="minutes">00</div>
+        <div class="time-label">分</div>
+      </div>
+      <div class="time-separator">:</div>
+      <div class="time-block">
+        <div class="time-number" id="seconds">00</div>
+        <div class="time-label">秒</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="encouragement-card">
+    <div class="encouragement-icon" id="encouragementIcon">✨</div>
+    <div class="encouragement-text" id="encouragementText"></div>
+    <div class="encouragement-author" id="encouragementAuthor"></div>
+  </div>
+
+  <div class="footer">
+    果果加油 <span class="heart">♥</span>
+  </div>
+</div>
+
+<script>
+// 高考日期：2026年6月7日 09:00
+const gaokaoDate = new Date(2026, 5, 7, 9, 0, 0);
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = gaokaoDate - now;
+
+  if (diff <= 0) {
+    document.getElementById('days').textContent = '00';
+    document.getElementById('hours').textContent = '00';
+    document.getElementById('minutes').textContent = '00';
+    document.getElementById('seconds').textContent = '00';
+    document.getElementById('encouragementText').textContent = '果果，高考加油！你一定可以的！';
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('days').textContent = String(days).padStart(2, '0');
+  document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+  document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+  document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+
+  // 根据剩余天数变化颜色
+  const daysEl = document.getElementById('days');
+  if (days <= 3) {
+    daysEl.style.color = '#ff6b9d';
+  } else if (days <= 10) {
+    daysEl.style.color = '#f8c291';
+  }
+}
+
+// 专属果果的每日鼓励语池
+const encouragements = [
+  { icon: '🍎', text: '果果，你刷的每一道题，背的每一个单词，都在为你想要的世界投票。', author: '—— 你比自己想象的更厉害' },
+  { icon: '🌟', text: '果果，乾坤未定，你就是那匹黑马。', author: '—— 高考从来不是终点' },
+  { icon: '💪', text: '果果，那些你独自努力的时光，终会让你成为闪闪发光的人。', author: '—— 相信积累的力量' },
+  { icon: '🔥', text: '最困难的时候，就是离成功不远了。果果，再坚持一下！', author: '—— 拿破仑' },
+  { icon: '🌅', text: '果果，每一个清晨的早起，每一个深夜的坚持，都在通往你想去的大学。', author: '—— 你比想象中更强大' },
+  { icon: '🎯', text: '不是因为看到希望才坚持，而是坚持了才看到希望。果果，你已经坚持了这么久。', author: '—— 坚持本身就是答案' },
+  { icon: '🌻', text: '果果，你现在做的一切，都是为了将来能对曾经的自己说一声"谢谢你"。', author: '—— 未来的你会感谢现在' },
+  { icon: '🏔️', text: '半山腰太挤了，果果，我们去山顶看看。', author: '—— 顶峰相见' },
+  { icon: '⚡', text: '果果，你的潜力无限，高考就是那个引爆点。', author: '—— 相信自己' },
+  { icon: '🦋', text: '果果，破茧成蝶需要时间，但飞起来的那一刻一切都值得。', author: '—— 蜕变就在眼前' },
+  { icon: '🌙', text: '深夜的灯知道果果的付出，黎明的光会给果果答案。', author: '—— 星光不负赶路人' },
+  { icon: '🏆', text: '果果，你已经走了这么远，剩下的路，只会更精彩。', author: '—— 坚持到最后就是胜利' },
+  { icon: '💫', text: '所有的逆袭，都是有备而来。果果，你准备好了。', author: '—— 一切就绪，只待绽放' },
+  { icon: '🎪', text: '高考不过是人生众多门中的一扇，果果认真准备的样子，会照亮所有门。', author: '—— 全力以赴，不留遗憾' },
+  { icon: '🍀', text: '运气也是实力的一部分，果果的实力已经攒够了。', author: '—— 好运藏在努力里' },
+  { icon: '🌈', text: '果果，雨会停，天会晴，努力一定会有回响。', author: '—— 风雨过后见彩虹' },
+  { icon: '🦅', text: '雄鹰不为暴风折翼，果果不为困难低头。', author: '—— 你生来就是战士' },
+  { icon: '💎', text: '压力是钻石形成的原因，果果正在成为那颗璀璨的钻。', author: '—— 化压力为动力' },
+  { icon: '🌊', text: '大浪淘沙，留下的都是真金。果果，你是真金不怕火炼。', author: '—— 你就是真金' },
+  { icon: '🎵', text: '人生没有白走的路，每一步都算数。果果的每一步都在走向更好的自己。', author: '—— 此刻即是未来' },
+  { icon: '🕯️', text: '果果，哪怕只是微光，也足以照亮前行的路。', author: '—— 你本身就是光' },
+  { icon: '🌲', text: '参天大树也是从一颗种子开始的，果果已经在茁壮成长。', author: '—— 厚积薄发' },
+  { icon: '⛵', text: '长风破浪会有时，直挂云帆济沧海。果果，你的大海就在前方。', author: '—— 李白《行路难》' },
+  { icon: '🗡️', text: '宝剑锋从磨砺出，梅花香自苦寒来。果果的磨砺即将开出最美的花。', author: '—— 《警世贤文》' },
+  { icon: '🏹', text: '会当凌绝顶，一览众山小。果果，你会站在最高处。', author: '—— 杜甫《望岳》' },
+  { icon: '🪷', text: '出淤泥而不染，濯清涟而不妖。果果就是那朵最美的莲花。', author: '—— 保持初心' },
+  { icon: '🎋', text: '千磨万击还坚劲，任尔东西南北风。果果，没什么能打倒你。', author: '—— 郑板桥《竹石》' },
+  { icon: '🐉', text: '金鳞岂是池中物，一遇风云便化龙。果果的舞台即将到来。', author: '—— 你就是那条龙' },
+  { icon: '⭐', text: '果果今天熬的夜，都会变成明天的光。', author: '—— 每一秒都值得' },
+  { icon: '🌠', text: '愿果果合上笔盖的那一刻，有侠客收剑入鞘的骄傲。', author: '—— 高考必胜' },
+];
+
+// 根据日期选择鼓励语（每天不同）
+function getTodayEncouragement() {
+  const now = new Date();
+  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+  const index = dayOfYear % encouragements.length;
+  return encouragements[index];
+}
+
+function showEncouragement() {
+  const enc = getTodayEncouragement();
+  document.getElementById('encouragementIcon').textContent = enc.icon;
+  document.getElementById('encouragementText').textContent = enc.text;
+  document.getElementById('encouragementAuthor').textContent = enc.author;
+}
+
+// 生成星空
+function createStars() {
+  const container = document.getElementById('stars');
+  const count = 120;
+  let html = '';
+
+  for (let i = 0; i < count; i++) {
+    const size = Math.random() * 2.5 + 0.5;
+    const x = Math.random() * 100;
+    const y = Math.random() * 100;
+    const dur = Math.random() * 3 + 2;
+    const delay = Math.random() * 5;
+    html += `<div class="star" style="
+      width:${size}px; height:${size}px;
+      left:${x}%; top:${y}%;
+      --dur:${dur}s; --delay:${delay}s;
+    "></div>`;
+  }
+
+  // 流星
+  for (let i = 0; i < 3; i++) {
+    const x = Math.random() * 80;
+    const y = Math.random() * 40;
+    const sdur = Math.random() * 4 + 6;
+    const sdelay = Math.random() * 15;
+    html += `<div class="shooting-star" style="
+      left:${x}%; top:${y}%;
+      --sdur:${sdur}s; --sdelay:${sdelay}s;
+    "></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+// 初始化
+createStars();
+showEncouragement();
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// 每天凌晨刷新鼓励语
+function scheduleMidnightRefresh() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setDate(midnight.getDate() + 1);
+  midnight.setHours(0, 0, 1, 0);
+  const msUntilMidnight = midnight - now;
+  setTimeout(() => {
+    showEncouragement();
+    scheduleMidnightRefresh();
+  }, msUntilMidnight);
+}
+scheduleMidnightRefresh();
+</script>
+
+</body>
+</html>
